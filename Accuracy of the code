@@ -1,0 +1,21 @@
+ Unzipping corpora/stopwords.zip.
+(0, '0.025*"feel" + 0.018*"like" + 0.014*"know" + 0.014*"anxieti" + 0.011*"help" + 0.009*"go" + 0.009*"get" + 0.008*"would" + 0.008*"attack" + 0.008*"want"')
+(1, '0.011*"year" + 0.011*"survey" + 0.010*"time" + 0.009*"take" + 0.007*"ask" + 0.007*"complet" + 0.006*"one" + 0.006*"us" + 0.006*"could" + 0.006*"studi"')
+(2, '0.018*"like" + 0.015*"feel" + 0.011*"want" + 0.010*"year" + 0.010*"time" + 0.010*"know" + 0.009*"think" + 0.008*"realli" + 0.008*"friend" + 0.007*"get"')
+(3, '0.013*"get" + 0.012*"go" + 0.010*"help" + 0.010*"know" + 0.008*"would" + 0.008*"want" + 0.007*"even" + 0.006*"need" + 0.006*"one" + 0.006*"like"')
+(4, '0.017*"get" + 0.011*"work" + 0.010*"go" + 0.009*"day" + 0.008*"time" + 0.007*"would" + 0.007*"got" + 0.006*"week" + 0.006*"start" + 0.006*"need"')
+Accuracy: 0.7077464788732394
+Accuracy: 0.7077464788732394
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.73      0.58      0.65       263
+           1       0.69      0.82      0.75       305
+
+    accuracy                           0.71       568
+   macro avg       0.71      0.70      0.70       568
+weighted avg       0.71      0.71      0.70       568
+
+Confusion Matrix:
+ [[152 111]
+ [ 55 250]]
