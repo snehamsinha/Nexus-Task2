@@ -1,0 +1,351 @@
+
+import nltk
+
+def download_nltk_resources():
+    try:
+        nltk.data.find('tokenizers/punkt')
+        nltk.data.find('corpora/stopwords')
+        print("NLTK resources 'punkt' and 'stopwords' are already downloaded.")
+    except LookupError:
+        print("Downloading NLTK resources...")
+        nltk.download('punkt')
+        nltk.download('stopwords')
+        print("Download complete.")
+
+# Call the function to download resources if needed
+download_nltk_resources()
+
+!pip install chardet
+from google.colab import files
+
+uploaded = files.upload()
+
+import os
+
+# Print current working directory
+print("Current directory:", os.getcwd())
+
+# List contents of the current directory
+print("Directory contents:", os.listdir())
+import pandas as pd
+import chardet
+import nltk
+from sklearn.model_selection import GridSearchCV
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+from gensim import models, corpora
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+nltk.download('punkt')
+nltk.download('stopwords')
+
+
+# Detect encoding using chardet
+with open("Stress.csv.zip", "rb") as rawdata:
+    result = chardet.detect(rawdata.read(10000))  # Read first 10,000 bytes
+
+encoding = result["encoding"]
+
+
+# Load the dataset with the detected encoding
+sample_data = pd.read_csv("Stress.csv.zip", encoding=encoding)
+
+# Preprocessing
+def preprocess_text(text):
+    # Lowercasing
+    text = text.lower()
+    # Tokenization
+    tokens = word_tokenize(text)
+    # Remove stopwords and non-alphabetic characters
+    stop_words = set(stopwords.words("english"))
+    tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
+    # Stemming
+    ps = PorterStemmer()
+    tokens = [ps.stem(word) for word in tokens]
+    return " ".join(tokens)
+
+sample_data["preprocessed_text"] = sample_data["text"].apply(preprocess_text)
+
+# LDA Topic Modeling
+texts = [text.split() for text in sample_data["preprocessed_text"]]
+dictionary = corpora.Dictionary(texts)
+corpus = [dictionary.doc2bow(text) for text in texts]
+lda_model = models.LdaModel(corpus, num_topics=5, id2word=dictionary, passes=10)
+
+# Get topics and their keywords
+topics = lda_model.print_topics(num_words=10)
+for topic in topics:
+    print(topic)
+
+# Model Training
+X = sample_data["preprocessed_text"]
+y = sample_data["label"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train_tfidf, y_train)
+y_pred = clf.predict(X_test_tfidf)
+
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Split the dataset into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Feature Engineering: Try using Count Vectorization and n-grams
+from sklearn.feature_extraction.text import CountVectorizer
+
+count_vectorizer = CountVectorizer(ngram_range=(1, 2), max_features=5000)
+X_train_count = count_vectorizer.fit_transform(X_train)
+X_test_count = count_vectorizer.transform(X_test)
+
+# Model Selection: Try Gradient Boosting Classifier
+from sklearn.ensemble import GradientBoostingClassifier
+gb_classifier = GradientBoostingClassifier(n_estimators=100, random_state=42)
+gb_classifier.fit(X_train_count, y_train)
+
+# Predict stress levels on the test set using the new model
+y_pred_gb = gb_classifier.predict(X_test_count)
+
+# Vectorize the text data using TF-IDF
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+# Train a Random Forest Classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(X_train_tfidf, y_train)
+
+# Predict stress levels on the test set
+y_pred = rf_classifier.predict(X_test_tfidf)
+
+# Evaluation
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+!pip install gensim
+!pip install pandas
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Confusion Matrix
+confusion_matrix_data = [[152, 111],
+                         [55, 250]]
+
+# Create a Seaborn heatmap for the confusion matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(confusion_matrix_data, annot=True, fmt="d", cmap="Blues")
+plt.title("Confusion Matrix for Stress Level Prediction")
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.show()
+
+
+import matplotlib.pyplot as plt
+
+# Sample feature importance data (replace with your actual data)
+features = ['feature1', 'feature2', 'feature3']
+importance_scores = [0.8, 0.6, 0.4]
+
+# Create a bar chart
+plt.bar(features, importance_scores)
+plt.xlabel('Features')
+plt.ylabel('Importance Score')
+plt.title('Feature Importance')
+plt.xticks(rotation=45)
+plt.show()
+
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+# Sample word frequency data (replace with your actual data)
+word_freq = {'stress': 100, 'anxiety': 80, 'health': 60, 'relax': 40}
+
+# Create a Word Cloud
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(word_freq)
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.title('Word Cloud for Stress-related Words')
+plt.show()
+
+
+import matplotlib.pyplot as plt
+
+# Sample data
+classes = ['No Stress', 'Stress']
+counts = [263, 305]
+
+# Create a bar chart
+plt.bar(classes, counts, color=['blue', 'red'])
+plt.xlabel('Classes')
+plt.ylabel('Count')
+plt.title('Class Distribution in the Dataset')
+plt.show()
+
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+# True Positives (TP), True Negatives (TN), False Positives (FP), False Negatives (FN)
+TP = 250
+TN = 152
+FP = 111
+FN = 55
+
+# Calculate True Positive Rate (TPR) and False Positive Rate (FPR)
+tpr = TP / (TP + FN)
+fpr = FP / (FP + TN)
+
+# Create the ROC curve with a single point (since we have only one data point)
+plt.plot(fpr, tpr, marker='o', markersize=5, label='ROC Point')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.show()
+
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+# Sample data (replace with your actual data)
+y_true = [0, 1, 0, 1]
+y_scores = [0.1, 0.8, 0.3, 0.9]
+
+fpr, tpr, thresholds = roc_curve(y_true, y_scores)
+
+# Create the ROC curve
+plt.plot(fpr, tpr, linestyle='-', marker='.')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.show()
+
+
+
+# Import libraries
+import pandas as pd
+from gensim import models
+
+# Example topic data
+topic_data = [
+    (0, '0.022*"feel" + 0.019*"like" + 0.014*"know" + 0.011*"go" + 0.010*"get" + 0.010*"want" + 0.010*"time" + 0.009*"even" + 0.008*"realli" + 0.008*"think"'),
+    (1, '0.010*"would" + 0.009*"time" + 0.006*"year" + 0.006*"friend" + 0.006*"live" + 0.006*"go" + 0.006*"talk" + 0.006*"want" + 0.006*"day" + 0.006*"tell"'),
+    (2, '0.018*"survey" + 0.014*"treatment" + 0.010*"complet" + 0.009*"take" + 0.009*"time" + 0.009*"particip" + 0.008*"year" + 0.007*"studi" + 0.007*"one" + 0.007*"research"'),
+    (3, '0.016*"get" + 0.015*"help" + 0.012*"would" + 0.009*"job" + 0.009*"go" + 0.009*"work" + 0.008*"need" + 0.008*"live" + 0.008*"money" + 0.007*"pay"'),
+    (4, '0.010*"get" + 0.008*"like" + 0.008*"time" + 0.007*"want" + 0.007*"realli" + 0.006*"one" + 0.006*"told" + 0.006*"go" + 0.006*"know" + 0.006*"year"')
+]
+
+# Create a DataFrame from the topic data
+df_topics = pd.DataFrame(topic_data, columns=["Topic_Index", "Word_Distribution"])
+
+# Extract topic labels based on highest probability words
+df_topics["Topic_Label"] = df_topics["Word_Distribution"].apply(lambda x: " ".join(word.split("*")[1][1:-1] for word in x.split("+")[:3]))
+
+# Print the labeled topics
+print(df_topics)
+
+
+!pip install matplotlib
+
+from gensim import models, corpora
+from wordcloud import WordCloud
+
+all_text = ' '.join(sample_data["preprocessed_text"])
+
+# Generate the word cloud
+wordcloud = WordCloud(width=800, height=400, background_color="white").generate(all_text)
+
+# Display the word cloud using matplotlib
+plt.figure(figsize=(10, 6))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.title("Word Cloud for Stress Level Prediction")
+plt.show()
+
+preprocessed_documents = sample_data["preprocessed_text"].tolist()
+
+# Create a dictionary from the preprocessed documents
+dictionary = corpora.Dictionary([doc.split() for doc in preprocessed_documents])
+
+# Create a bag-of-words (BoW) representation of the documents
+corpus = [dictionary.doc2bow(doc.split()) for doc in preprocessed_documents]
+
+# Train the LDA model
+num_topics = 5  # Number of topics to discover
+lda_model = models.LdaModel(corpus, num_topics=num_topics, id2word=dictionary, passes=10, random_state=42)
+
+# Get the most representative words for each topic
+topic_labels = {}
+for topic_id in range(num_topics):
+    topic_words = [word for word, _ in lda_model.show_topic(topic_id)]
+    topic_labels[f"Topic {topic_id + 1}"] = ", ".join(topic_words)
+
+# Print the topic labels
+for topic, words in topic_labels.items():
+    print(f"{topic}: {words}")
+
+sample_sentence = "I am in stress."
+
+# Preprocess the sample sentence
+sample_sentence_preprocessed = preprocess_text(sample_sentence)
+
+# Vectorize the preprocessed sample sentence using the same TF-IDF vectorizer
+sample_sentence_tfidf = tfidf_vectorizer.transform([sample_sentence_preprocessed])
+
+# Predict the stress level using the trained Random Forest Classifier
+predicted_stress_level = rf_classifier.predict(sample_sentence_tfidf)
+
+# Map the predicted numeric stress level back to its corresponding category (1 for stress, 0 for no stress)
+predicted_stress_category = "Stress" if predicted_stress_level[0] == 1 else "No Stress"
+
+print("Sample Sentence:", sample_sentence)
+print("Predicted Stress Category:", predicted_stress_category)
+
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+from gensim import models, corpora
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Extract feature importance scores from the trained classifier
+feature_importance = pd.Series(rf_classifier.feature_importances_, index=tfidf_vectorizer.get_feature_names_out())
+
+# Sort the feature importance scores in descending order
+feature_importance = feature_importance.sort_values(ascending=False)
+
+# Select the top N important features (words) to display on the heatmap
+top_n = 20
+top_n_features = feature_importance[:top_n]
+
+# Create a DataFrame from the top N features and their importance scores
+heatmap_data = pd.DataFrame({'Word': top_n_features.index, 'Importance': top_n_features.values})
+
+# Assign unique row and column names to the pivot table
+heatmap_data['Row'] = range(1, top_n + 1)
+heatmap_data['Column'] = range(1, top_n + 1)
+pivot_table = heatmap_data.pivot(index='Row', columns='Column', values='Importance')
+
+# Create a Seaborn heatmap
+plt.figure(figsize=(10, 6))
+sns.heatmap(pivot_table, cmap='YlGnBu', annot=True, fmt=".3f", xticklabels=top_n_features.index, yticklabels=top_n_features.index)
+plt.title(f'Top {top_n} Important Words for Stress Level Prediction')
+plt.xlabel('Word')
+plt.ylabel('Word')
+plt.show()
